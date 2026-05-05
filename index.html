@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OpenClaw — AI Agent System. Research leads, export Excel, send emails automatically.">
+  <title>OpenClaw — AI Agent System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+  <div class="bg-glow bg-glow--3"></div>
+
+  <!-- ─── SETUP BANNER (shown when keys missing) ─── -->
+  <div class="setup-banner" id="setup-banner" style="display:none;">
+    <div class="setup-banner__inner">
+      <span class="setup-banner__icon">⚙️</span>
+      <span class="setup-banner__text">API keys not configured — <strong>click here to set up OpenClaw</strong></span>
+      <button class="setup-banner__btn" onclick="openSetupModal()">Open Setup Guide</button>
+      <button class="setup-banner__close" onclick="document.getElementById('setup-banner').style.display='none'">✕</button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ─── SIDEBAR ─── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__brand">
+        <div class="sidebar__logo">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+            <circle cx="18" cy="18" r="16" stroke="url(#lg)" stroke-width="2.5"/>
+            <path d="M12 18C12 14.686 14.686 12 18 12C21.314 12 24 14.686 24 18" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M14 22C14 19.791 15.791 18 18 18C20.209 18 22 19.791 22 22" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="18" cy="25" r="1.5" fill="url(#lg)"/>
+            <defs><linearGradient id="lg" x1="4" y1="4" x2="32" y2="32"><stop stop-color="#3b82f6"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+          </svg>
+        </div>
+        <div>
+          <div class="sidebar__title">OpenClaw</div>
+          <div class="sidebar__subtitle">AI Agent System</div>
+        </div>
+      </div>
+
+      <!-- System Status -->
+      <div class="sidebar__section">
+        <div class="sidebar__label">System Status</div>
+        <div class="status-pills" id="status-pills">
+          <div class="status-pill" id="pill-groq"><span class="pill-dot"></span>Groq AI</div>
+          <div class="status-pill" id="pill-tavily"><span class="pill-dot"></span>Tavily Search</div>
+          <div class="status-pill" id="pill-gmail"><span class="pill-dot"></span>Gmail</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="sidebar__section">
+        <div class="sidebar__label">Quick Search</div>
+        <div class="quick-actions" id="quick-actions">
+          <button class="quick-btn" onclick="quickSearch('Find top 10 gyms in Islamabad')">🏋️ Gyms in Islamabad</button>
+          <button class="quick-btn" onclick="quickSearch('Find 10 digital marketing agencies in Karachi')">📱 Marketing Agencies Karachi</button>
+          <button class="quick-btn" onclick="quickSearch('Find 10 restaurants in Lahore with websites')">🍽️ Restaurants in Lahore</button>
+          <button class="quick-btn" onclick="quickSearch('Find software companies in Dubai')">💻 Software Companies Dubai</button>
+          <button class="quick-btn" onclick="quickSearch('Find dental clinics in Islamabad')">🦷 Dental Clinics Islamabad</button>
+          <button class="quick-btn" onclick="quickSearch('Find real estate agencies in Karachi')">🏠 Real Estate Karachi</button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="sidebar__section sidebar__section--grow">
+        <div class="sidebar__label">
+          Search History
+          <button class="clear-history-btn" onclick="clearHistory()" title="Clear history">✕</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">No searches yet</div>
+        </div>
+      </div>
+
+      <!-- Bottom Stats -->
+      <div class="sidebar__footer">
+        <div class="footer-stat"><span id="fs-total-leads">0</span><span>Total Leads</span></div>
+        <div class="footer-stat"><span id="fs-searches">0</span><span>Searches</span></div>
+        <div class="footer-stat"><span id="fs-emails">0</span><span>Emails Sent</span></div>
+      </div>
+
+      <button class="setup-btn" onclick="openSetupModal()">⚙️ Setup API Keys</button>
+    </aside>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <main class="main">
+
+      <!-- Top Bar -->
+      <div class="topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">☰</button>
+        <div class="topbar__right">
+          <div class="system-badge" id="system-badge">
+            <span class="system-badge__dot"></span>
+            <span id="system-badge-text">Checking system...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── HERO COMMAND CENTER ─── -->
+      <section class="hero" id="hero-section">
+        <div class="hero__heading">
+          <h1>Find Any Business.<br><span class="hero__gradient">In Seconds.</span></h1>
+          <p class="hero__sub">Type what you're looking for. OpenClaw searches the web, extracts leads, and lets you export or email them instantly.</p>
+        </div>
+
+        <div class="search-card">
+          <div class="search-card__input-wrap">
+            <span class="search-card__icon">🔍</span>
+            <input
+              type="text"
+              id="query-input"
+              class="search-card__input"
+              placeholder="e.g. Find 10 gyms in Islamabad..."
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button class="search-card__clear" id="clear-input-btn" onclick="clearInput()" style="display:none;">✕</button>
+          </div>
+
+          <div class="search-card__actions">
+            <button class="btn btn--primary btn--large" id="btn-research" onclick="handleResearch()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Research Leads
+            </button>
+            <button class="btn btn--secondary" id="btn-export" onclick="handleExport()" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export Excel
+            </button>
+            <button class="btn btn--accent" id="btn-email" onclick="handleEmail()" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Send Emails
+            </button>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="tips-row" id="tips-row">
+          <div class="tip">💡 <strong>Tip:</strong> Be specific — include city and number. e.g. "Find 15 dentists in Lahore"</div>
+          <div class="tip">⚡ <strong>Fast:</strong> Results in ~10 seconds using Groq Llama 3 + Tavily</div>
+          <div class="tip">🆓 <strong>Free:</strong> All APIs used are 100% free tier</div>
+        </div>
+      </section>
+
+      <!-- ─── FLOW TRACKER ─── -->
+      <div class="flow-tracker" id="flow-tracker" style="display:none;">
+        <div class="flow-step" id="flow-plan">
+          <div class="flow-step__dot"></div>
+          <div class="flow-step__icon">🧠</div>
+          <div class="flow-step__label">AI Planning</div>
+          <div class="flow-step__desc">Analyzing your query</div>
+        </div>
+        <div class="flow-line"></div>
+        <div class="flow-step" id="flow-search">
+          <div class="flow-step__dot"></div>
+          <div class="flow-step__icon">🔍</div>
+          <div class="flow-step__label">Web Search</div>
+          <div class="flow-step__desc">Fetching results</div>
+        </div>
+        <div class="flow-line"></div>
+        <div class="flow-step" id="flow-process">
+          <div class="flow-step__dot"></div>
+          <div class="flow-step__icon">🤖</div>
+          <div class="flow-step__label">Processing</div>
+          <div class="flow-step__desc">Extracting leads</div>
+        </div>
+        <div class="flow-line"></div>
+        <div class="flow-step" id="flow-output">
+          <div class="flow-step__dot"></div>
+          <div class="flow-step__icon">✅</div>
+          <div class="flow-step__label">Done</div>
+          <div class="flow-step__desc">Results ready</div>
+        </div>
+      </div>
+
+      <!-- ─── RESULTS SECTION ─── -->
+      <section class="results-section" id="results-section" style="display:none;">
+
+        <!-- Results Toolbar -->
+        <div class="results-toolbar">
+          <div class="results-toolbar__left">
+            <h2 class="results-title">
+              <span class="results-badge" id="results-count">0</span> leads found
+              <span class="results-query" id="results-query"></span>
+            </h2>
+          </div>
+          <div class="results-toolbar__right">
+            <!-- Filter -->
+            <div class="filter-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="filter-input" class="filter-input" placeholder="Filter results..." oninput="filterLeads(this.value)">
+            </div>
+            <label class="checkbox-label">
+              <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+              <span>All</span>
+            </label>
+            <span class="selected-count" id="selected-count" style="display:none;"><span id="sel-num">0</span> selected</span>
+            <button class="btn btn--small btn--danger" onclick="clearResults()">🗑 Clear</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table class="leads-table" id="leads-table">
+            <thead>
+              <tr>
+                <th style="width:36px;"><input type="checkbox" id="select-all-th" onchange="toggleSelectAll()"></th>
+                <th style="width:36px;">#</th>
+                <th onclick="sortBy('name')" class="sortable">Name <span class="sort-icon">↕</span></th>
+                <th onclick="sortBy('email')" class="sortable">Email <span class="sort-icon">↕</span></th>
+                <th onclick="sortBy('phone')" class="sortable">Phone <span class="sort-icon">↕</span></th>
+                <th onclick="sortBy('website')" class="sortable">Website <span class="sort-icon">↕</span></th>
+                <th>Address</th>
+                <th style="width:60px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leads-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Bulk Action Bar (shown when rows selected) -->
+        <div class="bulk-bar" id="bulk-bar" style="display:none;">
+          <span class="bulk-bar__text"><strong id="bulk-count">0</strong> leads selected</span>
+          <button class="btn btn--small btn--secondary" onclick="exportSelected()">📊 Export Selected</button>
+          <button class="btn btn--small btn--accent" onclick="emailSelected()">📧 Email Selected</button>
+          <button class="btn btn--small" onclick="deselectAll()">Deselect All</button>
+        </div>
+      </section>
+
+      <!-- ─── EMPTY STATE ─── -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-state__icon">🔭</div>
+        <h3>Ready to find leads</h3>
+        <p>Enter a search query above, or pick one of the quick search examples from the sidebar.</p>
+        <div class="empty-examples">
+          <button class="example-chip" onclick="quickSearch('Find 10 gyms in Islamabad')">🏋️ Gyms in Islamabad</button>
+          <button class="example-chip" onclick="quickSearch('Find digital marketing agencies in Karachi')">📱 Agencies in Karachi</button>
+          <button class="example-chip" onclick="quickSearch('Find software companies in Dubai')">💻 Companies in Dubai</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ─── SETUP MODAL ─── -->
+  <div class="modal-overlay" id="setup-modal" style="display:none;" onclick="closeSetupIfBg(event)">
+    <div class="modal setup-modal">
+      <div class="modal__header">
+        <h3>⚙️ Setup — API Keys</h3>
+        <button class="modal__close" onclick="closeSetupModal()">✕</button>
+      </div>
+      <div class="modal__body">
+        <p class="setup-intro">OpenClaw needs 2 free API keys to work. Follow the steps below:</p>
+
+        <div class="setup-step">
+          <div class="setup-step__num">1</div>
+          <div class="setup-step__content">
+            <div class="setup-step__title">Groq API Key <span class="badge badge--free">FREE</span></div>
+            <div class="setup-step__desc">Used for AI (Llama 3 model). No credit card needed.</div>
+            <a href="https://console.groq.com/keys" target="_blank" class="setup-link">→ Get free key at console.groq.com</a>
+            <div class="setup-step__code">GROQ_API_KEY=gsk_xxxxxxxx...</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="setup-step__num">2</div>
+          <div class="setup-step__content">
+            <div class="setup-step__title">Tavily Search Key <span class="badge badge--free">FREE</span></div>
+            <div class="setup-step__desc">Used for web search. 1,000 searches/month free.</div>
+            <a href="https://tavily.com" target="_blank" class="setup-link">→ Get free key at tavily.com</a>
+            <div class="setup-step__code">TAVILY_API_KEY=tvly-xxxxxxxx...</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="setup-step__num">3</div>
+          <div class="setup-step__content">
+            <div class="setup-step__title">Gmail App Password <span class="badge badge--optional">OPTIONAL</span></div>
+            <div class="setup-step__desc">Only needed for sending emails. Skip if not using email.</div>
+            <div class="setup-step__mini-steps">
+              <div>① Enable 2-Step Verification on your Google Account</div>
+              <div>② Go to: Google Account → Security → App Passwords</div>
+              <div>③ Create an app password → copy the 16-character code</div>
+            </div>
+            <div class="setup-step__code">GMAIL_USER=you@gmail.com<br>GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx</div>
+          </div>
+        </div>
+
+        <div class="setup-file-hint">
+          Paste all keys into: <code class="inline-code">openclaw/.env</code> — then restart the server.
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--small" onclick="closeSetupModal()">Close</button>
+        <button class="btn btn--small btn--primary" onclick="recheckStatus()">🔄 Recheck Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── EMAIL MODAL ─── -->
+  <div class="modal-overlay" id="email-modal" style="display:none;" onclick="closeEmailIfBg(event)">
+    <div class="modal">
+      <div class="modal__header">
+        <h3>📧 Compose & Send</h3>
+        <button class="modal__close" onclick="closeEmailModal()">✕</button>
+      </div>
+      <div class="modal__body">
+        <div class="recipient-bar">
+          <span class="recipient-bar__label">To:</span>
+          <div class="email-chips" id="email-chips"></div>
+          <span class="recipient-bar__count" id="recipient-count"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="email-subject">Subject</label>
+          <input type="text" id="email-subject" class="form-input" placeholder="e.g. Partnership Opportunity with {{name}}">
+        </div>
+        <div class="form-group">
+          <label for="email-body">Message <span class="label-hint">Use {{name}} to personalize</span></label>
+          <textarea id="email-body" class="form-textarea" rows="9" placeholder="Hi {{name}},&#10;&#10;Write your message here..."></textarea>
+        </div>
+        <div class="form-actions-row">
+          <button class="btn btn--small btn--secondary" onclick="generateEmailWithAI()" id="btn-ai-email">🤖 Generate with AI</button>
+          <span class="char-count" id="char-count">0 chars</span>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--small" onclick="closeEmailModal()">Cancel</button>
+        <button class="btn btn--small btn--accent" onclick="sendEmails()" id="btn-send-emails">
+          Send to <span id="email-send-count">0</span> leads →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── LEAD DETAIL MODAL ─── -->
+  <div class="modal-overlay" id="detail-modal" style="display:none;" onclick="closeDetailIfBg(event)">
+    <div class="modal modal--small">
+      <div class="modal__header">
+        <h3>Lead Details</h3>
+        <button class="modal__close" onclick="document.getElementById('detail-modal').style.display='none'">✕</button>
+      </div>
+      <div class="modal__body" id="detail-body"></div>
+      <div class="modal__footer">
+        <button class="btn btn--small btn--secondary" id="detail-export-btn">📊 Export This Lead</button>
+        <button class="btn btn--small btn--accent" id="detail-email-btn">📧 Email This Lead</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
